@@ -17,6 +17,7 @@ class AppTheme:
     
     SECONDARY = "#FF9800"        # Naranja
     SECONDARY_LIGHT = "#FFB74D"
+    ACCENT = "#7C4DFF"           # Púrpura (accent)
     
     SUCCESS = "#4CAF50"          # Verde
     ERROR = "#F44336"            # Rojo
@@ -160,3 +161,10 @@ class Icons:
     WARNING = "warning"
     ERROR = "error"
     INFO = "info"
+    PERSON = "person"
+    PEOPLE = "people"
+    LOCK = "lock"
+    LOGOUT = "logout"
+    LOGIN = "login"
+    SECURITY = "security"
+    ADMIN = "admin_panel_settings"

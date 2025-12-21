@@ -1,52 +1,113 @@
 """
 ConSmart - Vista de Administración
 ==================================
-Panel para gestionar hojas, locales y categorías.
+Panel para gestionar hojas, locales, categorías y usuarios.
 """
 
 import flet as ft
 
 from src.ui.theme import AppTheme, Styles, Icons
-from src.logic import ConfigService
+from src.logic import ConfigService, get_auth
+from src.ui.views.usuarios_view import UsuariosView, RolesInfoView
 
 
 class AdminView:
     """
     Vista de administración del sistema.
-    Permite gestionar hojas, locales y categorías.
+    Permite gestionar hojas, locales, categorías y usuarios.
     """
     
     def __init__(self, page: ft.Page):
         self.page = page
         self.config_service = ConfigService()
+        self.auth = get_auth()
     
     def build(self) -> ft.Control:
         """Construye y retorna el control."""
-        # Tabs para cada sección
-        self.tabs = ft.Tabs(
-            selected_index=0,
-            tabs=[
+        
+        # Verificar si puede gestionar config
+        puede_config = self.auth.puede('puede_gestionar_config') or self.auth.es_admin()
+        puede_usuarios = self.auth.puede('puede_gestionar_usuarios')
+        
+        # Tabs disponibles según permisos
+        tabs_list = []
+        tab_contents = []
+        
+        if puede_config:
+            tabs_list.extend([
                 ft.Tab(text="Hojas/Cuentas", icon=Icons.ACCOUNT),
                 ft.Tab(text="Locales", icon=Icons.STORE),
                 ft.Tab(text="Categorías", icon=Icons.CATEGORY),
-            ],
+            ])
+            self.tab_hojas = self._crear_tab_hojas()
+            self.tab_locales = self._crear_tab_locales()
+            self.tab_categorias = self._crear_tab_categorias()
+            tab_contents.extend([self.tab_hojas, self.tab_locales, self.tab_categorias])
+        
+        if puede_usuarios:
+            tabs_list.append(ft.Tab(text="Usuarios", icon=ft.Icons.PEOPLE))
+            self.tab_usuarios = UsuariosView(self.page).build()
+            tab_contents.append(self.tab_usuarios)
+        
+        # Siempre mostrar info de roles
+        tabs_list.append(ft.Tab(text="Roles", icon=ft.Icons.SECURITY))
+        self.tab_roles = RolesInfoView(self.page).build()
+        tab_contents.append(self.tab_roles)
+        
+        # Si no tiene ningún permiso
+        if not tabs_list:
+            return ft.Container(
+                content=ft.Column([
+                    ft.Icon(ft.Icons.LOCK, size=64, color=AppTheme.TEXT_SECONDARY),
+                    ft.Text(
+                        "Acceso Restringido",
+                        size=24,
+                        weight=ft.FontWeight.BOLD,
+                        color=AppTheme.TEXT_SECONDARY,
+                    ),
+                    ft.Text(
+                        "No tiene permiso para acceder a la configuración",
+                        color=AppTheme.TEXT_SECONDARY,
+                    ),
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=16),
+                alignment=ft.alignment.center,
+                expand=True,
+            )
+        
+        self.tab_contents = tab_contents
+        
+        # Tabs para cada sección
+        self.tabs = ft.Tabs(
+            selected_index=0,
+            tabs=tabs_list,
             on_change=self._on_tab_change,
         )
         
-        # Contenido de cada tab
-        self.tab_hojas = self._crear_tab_hojas()
-        self.tab_locales = self._crear_tab_locales()
-        self.tab_categorias = self._crear_tab_categorias()
-        
         # Contenedor de contenido
         self.contenido = ft.Container(
-            content=self.tab_hojas,
+            content=tab_contents[0] if tab_contents else ft.Container(),
             expand=True,
         )
         
+        # Info del usuario actual
+        sesion = self.auth.sesion
+        user_info = ft.Container(
+            content=ft.Row([
+                ft.Icon(ft.Icons.PERSON, size=16, color=AppTheme.TEXT_SECONDARY),
+                ft.Text(
+                    f"{sesion.nombre_completo} ({sesion.rol_nombre})" if sesion else "Sin sesión",
+                    size=12,
+                    color=AppTheme.TEXT_SECONDARY,
+                ),
+            ], spacing=4),
+        ) if sesion else ft.Container()
+        
         return ft.Column([
             ft.Container(
-                content=ft.Text("⚙️ Configuración del Sistema", **Styles.titulo_pagina()),
+                content=ft.Row([
+                    ft.Text("⚙️ Configuración del Sistema", **Styles.titulo_pagina()),
+                    user_info,
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                 padding=ft.padding.only(bottom=16),
             ),
             self.tabs,
@@ -56,9 +117,9 @@ class AdminView:
     
     def _on_tab_change(self, e):
         """Cambia el contenido según el tab seleccionado."""
-        tabs_contenido = [self.tab_hojas, self.tab_locales, self.tab_categorias]
-        self.contenido.content = tabs_contenido[self.tabs.selected_index]
-        self.contenido.update()
+        if self.tabs.selected_index < len(self.tab_contents):
+            self.contenido.content = self.tab_contents[self.tabs.selected_index]
+            self.contenido.update()
     
     # ==================== TAB HOJAS ====================
     

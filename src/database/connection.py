@@ -142,6 +142,41 @@ class DatabaseConnection:
             )
         """)
         
+        # Tabla de Roles
+        self._connection.execute("""
+            CREATE TABLE IF NOT EXISTS roles (
+                id INTEGER PRIMARY KEY DEFAULT nextval('seq_movimiento_id'),
+                nombre VARCHAR NOT NULL UNIQUE,
+                descripcion VARCHAR,
+                puede_registrar BOOLEAN DEFAULT TRUE,
+                puede_ver_historial BOOLEAN DEFAULT TRUE,
+                puede_editar_movimientos BOOLEAN DEFAULT FALSE,
+                puede_eliminar_movimientos BOOLEAN DEFAULT FALSE,
+                puede_modificar_saldos BOOLEAN DEFAULT FALSE,
+                puede_gestionar_config BOOLEAN DEFAULT FALSE,
+                puede_gestionar_usuarios BOOLEAN DEFAULT FALSE,
+                es_admin BOOLEAN DEFAULT FALSE,
+                activo BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Tabla de Usuarios
+        self._connection.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY DEFAULT nextval('seq_movimiento_id'),
+                username VARCHAR NOT NULL UNIQUE,
+                password_hash VARCHAR NOT NULL,
+                nombre_completo VARCHAR,
+                email VARCHAR,
+                rol_id INTEGER REFERENCES roles(id),
+                activo BOOLEAN DEFAULT TRUE,
+                ultimo_login TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_by INTEGER
+            )
+        """)
+        
         # Índices para rendimiento
         self._connection.execute("""
             CREATE INDEX IF NOT EXISTS idx_mov_fecha ON movimientos(fecha)
@@ -159,7 +194,9 @@ class DatabaseConnection:
         # Verificar si ya hay datos
         count = self._connection.execute("SELECT COUNT(*) FROM hojas").fetchone()[0]
         if count > 0:
-            return  # Ya hay datos, no hacer nada
+            # Aún así verificar si hay roles/usuarios
+            self._crear_roles_y_admin_default()
+            return  # Ya hay datos, no hacer nada más
         
         # Insertar Hojas
         for hoja in DATOS_INICIALES["hojas"]:
@@ -187,7 +224,65 @@ class DatabaseConnection:
                         INSERT INTO categorias (nombre, local_id) VALUES (?, ?)
                     """, [cat_nombre, local_id])
         
+        # Crear roles y usuario admin por defecto
+        self._crear_roles_y_admin_default()
+        
         print("✅ Datos iniciales cargados correctamente")
+    
+    def _crear_roles_y_admin_default(self):
+        """Crea los roles por defecto y el usuario administrador."""
+        import hashlib
+        
+        # Verificar si ya existen roles
+        count = self._connection.execute("SELECT COUNT(*) FROM roles").fetchone()[0]
+        if count > 0:
+            return  # Ya hay roles
+        
+        # Rol Administrador (todos los permisos)
+        self._connection.execute("""
+            INSERT INTO roles (nombre, descripcion, puede_registrar, puede_ver_historial,
+                puede_editar_movimientos, puede_eliminar_movimientos, puede_modificar_saldos,
+                puede_gestionar_config, puede_gestionar_usuarios, es_admin)
+            VALUES ('Administrador', 'Control total del sistema', TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+        """)
+        
+        # Rol Supervisor (puede editar pero no eliminar ni gestionar usuarios)
+        self._connection.execute("""
+            INSERT INTO roles (nombre, descripcion, puede_registrar, puede_ver_historial,
+                puede_editar_movimientos, puede_eliminar_movimientos, puede_modificar_saldos,
+                puede_gestionar_config, puede_gestionar_usuarios, es_admin)
+            VALUES ('Supervisor', 'Puede editar movimientos y modificar saldos', TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE)
+        """)
+        
+        # Rol Operador (solo registrar y ver)
+        self._connection.execute("""
+            INSERT INTO roles (nombre, descripcion, puede_registrar, puede_ver_historial,
+                puede_editar_movimientos, puede_eliminar_movimientos, puede_modificar_saldos,
+                puede_gestionar_config, puede_gestionar_usuarios, es_admin)
+            VALUES ('Operador', 'Solo puede registrar y ver historial', TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
+        """)
+        
+        # Rol Solo Lectura
+        self._connection.execute("""
+            INSERT INTO roles (nombre, descripcion, puede_registrar, puede_ver_historial,
+                puede_editar_movimientos, puede_eliminar_movimientos, puede_modificar_saldos,
+                puede_gestionar_config, puede_gestionar_usuarios, es_admin)
+            VALUES ('Solo Lectura', 'Solo puede ver información', FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
+        """)
+        
+        # Obtener ID del rol admin
+        admin_rol_id = self._connection.execute(
+            "SELECT id FROM roles WHERE nombre = 'Administrador'"
+        ).fetchone()[0]
+        
+        # Crear usuario admin por defecto (password: admin123)
+        password_hash = hashlib.sha256("admin123".encode()).hexdigest()
+        self._connection.execute("""
+            INSERT INTO usuarios (username, password_hash, nombre_completo, rol_id)
+            VALUES ('admin', ?, 'Administrador del Sistema', ?)
+        """, [password_hash, admin_rol_id])
+        
+        print("✅ Roles y usuario administrador creados (usuario: admin, contraseña: admin123)")
     
     @property
     def con(self) -> duckdb.DuckDBPyConnection:
