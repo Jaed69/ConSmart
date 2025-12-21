@@ -12,7 +12,7 @@ from src.ui.theme import AppTheme, Styles, Icons
 from src.logic import MovimientoValidator
 
 
-class ExcelRow(ft.UserControl):
+class ExcelRow:
     """
     Componente que simula una fila de Excel para ingreso rápido de movimientos.
     Incluye validación en tiempo real y filtros dependientes.
@@ -25,18 +25,21 @@ class ExcelRow(ft.UserControl):
         on_submit: Callable[[dict], None],
         obtener_categorias: Callable[[int], List[Dict]],
         descripciones_sugeridas: List[str] = None,
+        page: ft.Page = None,
     ):
-        super().__init__()
         self.hojas = hojas
         self.locales = locales
         self.on_submit = on_submit
         self.obtener_categorias = obtener_categorias
         self.descripciones_sugeridas = descripciones_sugeridas or []
+        self.page = page
         
         # Estado interno
         self._categorias_actuales: List[Dict] = []
+        self._control: ft.Control = None
     
-    def build(self):
+    def build(self) -> ft.Control:
+        """Construye y retorna el control."""
         # Dropdown de Hoja
         self.dd_hoja = ft.Dropdown(
             label="Hoja",
@@ -125,7 +128,7 @@ class ExcelRow(ft.UserControl):
         # Botón de agregar
         self.btn_agregar = ft.IconButton(
             icon=Icons.ADD,
-            icon_color=ft.colors.WHITE,
+            icon_color=ft.Colors.WHITE,
             bgcolor=AppTheme.SUCCESS,
             tooltip="Agregar movimiento (Enter)",
             on_click=self._on_submit,
@@ -166,7 +169,7 @@ class ExcelRow(ft.UserControl):
                     spacing=8,
                 ),
                 padding=ft.padding.symmetric(horizontal=10, vertical=8),
-                bgcolor=ft.colors.WHITE,
+                bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 border=ft.border.all(1, AppTheme.DIVIDER),
             ),
@@ -176,7 +179,8 @@ class ExcelRow(ft.UserControl):
     
     def _abrir_date_picker(self, e):
         """Abre el selector de fecha."""
-        self.date_picker.pick_date()
+        if self.page:
+            self.page.open(self.date_picker)
     
     def _on_fecha_change(self, e):
         """Cuando cambia la fecha seleccionada."""
@@ -263,7 +267,8 @@ class ExcelRow(ft.UserControl):
         self.txt_ingreso.value = "0"
         self.txt_egreso.value = "0"
         self.mensaje.visible = False
-        self.update()
+        if self.page:
+            self.page.update()
     
     def _mostrar_error(self, texto: str):
         """Muestra mensaje de error."""

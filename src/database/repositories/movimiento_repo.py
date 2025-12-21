@@ -127,6 +127,71 @@ class MovimientoRepository:
         
         return self.db.fetchdf(query, params)
     
+    def obtener_historial_filtrado(self, hoja_id: int = None,
+                                    local_id: int = None,
+                                    fecha_inicio: date = None,
+                                    fecha_fin: date = None,
+                                    texto_busqueda: str = None) -> pd.DataFrame:
+        """
+        Obtiene el historial con múltiples filtros opcionales.
+        """
+        query = """
+            SELECT 
+                m.id,
+                m.fecha,
+                h.nombre as hoja,
+                l.nombre as local,
+                c.nombre as categoria,
+                m.num_documento,
+                m.responsable,
+                m.descripcion,
+                m.ingreso,
+                m.egreso,
+                SUM(m.ingreso - m.egreso) OVER (
+                    ORDER BY m.fecha, m.id
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                ) as saldo
+            FROM movimientos m
+            LEFT JOIN hojas h ON m.hoja_id = h.id
+            LEFT JOIN locales l ON m.local_id = l.id
+            LEFT JOIN categorias c ON m.categoria_id = c.id
+            WHERE 1=1
+        """
+        
+        params = []
+        
+        if hoja_id:
+            query += " AND m.hoja_id = ?"
+            params.append(hoja_id)
+        
+        if local_id:
+            query += " AND m.local_id = ?"
+            params.append(local_id)
+        
+        if fecha_inicio:
+            query += " AND m.fecha >= ?"
+            params.append(fecha_inicio)
+        
+        if fecha_fin:
+            query += " AND m.fecha <= ?"
+            params.append(fecha_fin)
+        
+        if texto_busqueda:
+            query += " AND LOWER(m.descripcion) LIKE ?"
+            params.append(f"%{texto_busqueda.lower()}%")
+        
+        query += " ORDER BY m.fecha DESC, m.id DESC"
+        
+        return self.db.fetchdf(query, params)
+    
+    def contar_movimientos_por_fecha(self, fecha: date) -> int:
+        """Cuenta los movimientos de una fecha específica."""
+        query = """
+            SELECT COUNT(*) FROM movimientos WHERE fecha = ?
+        """
+        result = self.db.fetchone(query, [fecha])
+        return int(result[0]) if result else 0
+    
     def obtener_saldo_actual(self, hoja_id: int) -> float:
         """Calcula el saldo actual de una hoja."""
         query = """

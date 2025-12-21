@@ -10,18 +10,18 @@ from src.ui.theme import AppTheme, Styles, Icons
 from src.logic import ConfigService
 
 
-class AdminView(ft.UserControl):
+class AdminView:
     """
     Vista de administración del sistema.
     Permite gestionar hojas, locales y categorías.
     """
     
     def __init__(self, page: ft.Page):
-        super().__init__()
         self.page = page
         self.config_service = ConfigService()
     
-    def build(self):
+    def build(self) -> ft.Control:
+        """Construye y retorna el control."""
         # Tabs para cada sección
         self.tabs = ft.Tabs(
             selected_index=0,
@@ -111,7 +111,7 @@ class AdminView(ft.UserControl):
             ft.Container(
                 content=self.lista_hojas,
                 expand=True,
-                bgcolor=ft.colors.WHITE,
+                bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 padding=12,
             ),
@@ -206,7 +206,7 @@ class AdminView(ft.UserControl):
             ft.Container(
                 content=self.lista_locales,
                 expand=True,
-                bgcolor=ft.colors.WHITE,
+                bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 padding=12,
             ),
@@ -310,7 +310,7 @@ class AdminView(ft.UserControl):
             ft.Container(
                 content=self.lista_categorias,
                 expand=True,
-                bgcolor=ft.colors.WHITE,
+                bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 padding=12,
             ),

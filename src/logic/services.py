@@ -52,6 +52,44 @@ class MovimientoService:
             hoja_id, fecha_inicio, fecha_fin
         )
     
+    def obtener_historial_filtrado(self, hoja_id: int = None,
+                                    local_id: int = None,
+                                    fecha_inicio: date = None,
+                                    fecha_fin: date = None,
+                                    texto_busqueda: str = None) -> pd.DataFrame:
+        """Obtiene el historial con múltiples filtros."""
+        return self.repo.obtener_historial_filtrado(
+            hoja_id=hoja_id,
+            local_id=local_id,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            texto_busqueda=texto_busqueda
+        )
+    
+    def obtener_movimiento(self, movimiento_id: int) -> Optional[Dict]:
+        """Obtiene un movimiento por ID."""
+        return self.repo.obtener_por_id(movimiento_id)
+    
+    def actualizar_movimiento(self, movimiento_id: int, datos: dict) -> bool:
+        """Actualiza un movimiento existente."""
+        try:
+            return self.repo.actualizar(movimiento_id, datos)
+        except Exception as e:
+            print(f"Error al actualizar movimiento: {e}")
+            return False
+    
+    def eliminar_movimiento(self, movimiento_id: int) -> bool:
+        """Elimina un movimiento."""
+        try:
+            return self.repo.eliminar(movimiento_id)
+        except Exception as e:
+            print(f"Error al eliminar movimiento: {e}")
+            return False
+    
+    def contar_movimientos_hoy(self) -> int:
+        """Cuenta los movimientos registrados hoy."""
+        return self.repo.contar_movimientos_por_fecha(date.today())
+    
     def obtener_saldo_actual(self, hoja_id: int) -> float:
         """Obtiene el saldo actual de una cuenta."""
         return self.repo.obtener_saldo_actual(hoja_id)

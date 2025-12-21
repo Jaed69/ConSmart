@@ -122,7 +122,6 @@ class Styles:
             "border_radius": 4,
             "content_padding": ft.padding.symmetric(horizontal=8, vertical=4),
             "text_size": 13,
-            "height": 40,
         }
     
     @staticmethod
@@ -134,7 +133,6 @@ class Styles:
             "border_radius": 4,
             "content_padding": ft.padding.symmetric(horizontal=8, vertical=0),
             "text_size": 13,
-            "height": 40,
         }
 
 

@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.config import APP_CONFIG, UI_CONFIG
 from src.database import get_db
 from src.ui.theme import AppTheme, Icons
-from src.ui.views import DashboardView, EntryView, AdminView
+from src.ui.views import DashboardView, EntryView, HistoryView, AdminView
 
 
 def main(page: ft.Page):
@@ -45,7 +45,7 @@ def main(page: ft.Page):
         min_extended_width=200,
         leading=ft.Container(
             content=ft.Column([
-                ft.Icon(ft.icons.ACCOUNT_BALANCE_WALLET, size=32, color=AppTheme.PRIMARY),
+                ft.Icon(ft.Icons.ACCOUNT_BALANCE_WALLET, size=32, color=AppTheme.PRIMARY),
                 ft.Text("ConSmart", size=12, weight=ft.FontWeight.BOLD),
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
             padding=ft.padding.symmetric(vertical=16),
@@ -62,13 +62,18 @@ def main(page: ft.Page):
                 label="Registro",
             ),
             ft.NavigationRailDestination(
+                icon=Icons.HISTORY,
+                selected_icon=Icons.HISTORY,
+                label="Historial",
+            ),
+            ft.NavigationRailDestination(
                 icon=Icons.SETTINGS,
                 selected_icon=Icons.SETTINGS,
                 label="Config",
             ),
         ],
         on_change=lambda e: cambiar_vista(e.control.selected_index),
-        bgcolor=ft.colors.WHITE,
+        bgcolor=ft.Colors.WHITE,
     )
     
     # Contenedor principal de vistas
@@ -83,13 +88,16 @@ def main(page: ft.Page):
         nonlocal current_route
         
         if index == 0:
-            vista_container.content = DashboardView(page)
+            vista_container.content = DashboardView(page).build()
             current_route = "/"
         elif index == 1:
-            vista_container.content = EntryView(page)
+            vista_container.content = EntryView(page).build()
             current_route = "/registro"
         elif index == 2:
-            vista_container.content = AdminView(page)
+            vista_container.content = HistoryView(page).build()
+            current_route = "/historial"
+        elif index == 3:
+            vista_container.content = AdminView(page).build()
             current_route = "/admin"
         
         page.update()
@@ -99,9 +107,12 @@ def main(page: ft.Page):
         if page.route == "/registro":
             rail.selected_index = 1
             cambiar_vista(1)
-        elif page.route == "/admin":
+        elif page.route == "/historial":
             rail.selected_index = 2
             cambiar_vista(2)
+        elif page.route == "/admin":
+            rail.selected_index = 3
+            cambiar_vista(3)
         else:
             rail.selected_index = 0
             cambiar_vista(0)

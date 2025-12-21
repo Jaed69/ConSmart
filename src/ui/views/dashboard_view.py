@@ -11,18 +11,18 @@ from src.ui.theme import AppTheme, Styles, Icons
 from src.logic import BalanceCalculator, ConfigService
 
 
-class DashboardView(ft.UserControl):
+class DashboardView:
     """
     Dashboard principal con resumen de todas las cuentas.
     """
     
     def __init__(self, page: ft.Page):
-        super().__init__()
         self.page = page
         self.calculator = BalanceCalculator()
         self.config_service = ConfigService()
     
-    def build(self):
+    def build(self) -> ft.Control:
+        """Construye y retorna el control."""
         return ft.Column([
             ft.Container(
                 content=ft.Text("🏠 Dashboard", **Styles.titulo_pagina()),
@@ -70,7 +70,7 @@ class DashboardView(ft.UserControl):
                     ),
                 ]),
                 padding=16,
-                bgcolor=ft.colors.WHITE,
+                bgcolor=ft.Colors.WHITE,
                 border_radius=12,
                 border=ft.border.all(1, AppTheme.DIVIDER),
                 width=220,

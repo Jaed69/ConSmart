@@ -11,7 +11,7 @@ import pandas as pd
 from src.ui.theme import AppTheme, Styles, Icons
 
 
-class MovimientosTable(ft.UserControl):
+class MovimientosTable:
     """
     Tabla para mostrar movimientos con saldo acumulado.
     Incluye ordenamiento, paginación y formato de moneda.
@@ -21,13 +21,16 @@ class MovimientosTable(ft.UserControl):
         self,
         on_edit: Callable[[int], None] = None,
         on_delete: Callable[[int], None] = None,
+        page: ft.Page = None,
     ):
-        super().__init__()
         self.on_edit = on_edit
         self.on_delete = on_delete
+        self.page = page
         self._data: pd.DataFrame = pd.DataFrame()
+        self._control: ft.Control = None
     
-    def build(self):
+    def build(self) -> ft.Control:
+        """Construye y retorna el control."""
         self.data_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("Fecha", weight=ft.FontWeight.BOLD)),
@@ -44,7 +47,7 @@ class MovimientosTable(ft.UserControl):
             border_radius=8,
             vertical_lines=ft.border.BorderSide(1, AppTheme.DIVIDER),
             horizontal_lines=ft.border.BorderSide(1, AppTheme.DIVIDER),
-            heading_row_color=ft.colors.GREY_100,
+            heading_row_color=ft.Colors.GREY_100,
             heading_row_height=45,
             data_row_min_height=40,
             data_row_max_height=50,
@@ -91,7 +94,8 @@ class MovimientosTable(ft.UserControl):
             
             self.data_table.rows = filas
         
-        self.update()
+        if self.page:
+            self.page.update()
     
     def _crear_fila(self, row) -> ft.DataRow:
         """Crea una fila de la tabla a partir de un registro."""
@@ -185,16 +189,18 @@ class MovimientosTable(ft.UserControl):
             self.on_delete(id)
 
 
-class SaldoCard(ft.UserControl):
+class SaldoCard:
     """Tarjeta que muestra el saldo actual de una cuenta."""
     
-    def __init__(self, titulo: str, saldo: float, moneda: str = "S/"):
-        super().__init__()
+    def __init__(self, titulo: str, saldo: float, moneda: str = "S/", page: ft.Page = None):
         self.titulo = titulo
         self.saldo = saldo
         self.moneda = moneda
+        self.page = page
+        self._control: ft.Control = None
     
-    def build(self):
+    def build(self) -> ft.Control:
+        """Construye y retorna el control."""
         color_saldo = AppTheme.SALDO_POSITIVO if self.saldo >= 0 else AppTheme.SALDO_NEGATIVO
         
         return ft.Container(
@@ -208,7 +214,7 @@ class SaldoCard(ft.UserControl):
                 ),
             ]),
             padding=16,
-            bgcolor=ft.colors.WHITE,
+            bgcolor=ft.Colors.WHITE,
             border_radius=8,
             border=ft.border.all(1, AppTheme.DIVIDER),
             width=200,
@@ -217,4 +223,5 @@ class SaldoCard(ft.UserControl):
     def actualizar_saldo(self, nuevo_saldo: float):
         """Actualiza el saldo mostrado."""
         self.saldo = nuevo_saldo
-        self.update()
+        if self.page:
+            self.page.update()
