@@ -1,0 +1,13 @@
+[project]
+name = "consmart"
+version = "0.1.0"
+description = "Sistema Contable ConSmart - Gestión contable simplificada"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flet[all]>=0.80.0",
+    "duckdb>=0.9.0",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "python-dateutil>=2.8.0",
+]
