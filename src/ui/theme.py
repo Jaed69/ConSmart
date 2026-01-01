@@ -47,8 +47,8 @@ class AppTheme:
             color_scheme=ft.ColorScheme(
                 primary=cls.PRIMARY,
                 secondary=cls.SECONDARY,
-                background=cls.BACKGROUND,
                 surface=cls.SURFACE,
+                surface_container=cls.BACKGROUND,
             ),
             font_family="Roboto",
         )
@@ -121,7 +121,7 @@ class Styles:
             "border_color": AppTheme.DIVIDER,
             "focused_border_color": AppTheme.PRIMARY,
             "border_radius": 4,
-            "content_padding": ft.padding.symmetric(horizontal=8, vertical=4),
+            "content_padding": ft.Padding.symmetric(horizontal=8, vertical=4),
             "text_size": 13,
         }
     
@@ -132,7 +132,7 @@ class Styles:
             "border_color": AppTheme.DIVIDER,
             "focused_border_color": AppTheme.PRIMARY,
             "border_radius": 4,
-            "content_padding": ft.padding.symmetric(horizontal=8, vertical=0),
+            "content_padding": ft.Padding.symmetric(horizontal=8, vertical=0),
             "text_size": 13,
         }
 

@@ -26,7 +26,7 @@ class DashboardView:
         return ft.Column([
             ft.Container(
                 content=ft.Text("🏠 Dashboard", **Styles.titulo_pagina()),
-                padding=ft.padding.only(bottom=16),
+                padding=ft.Padding.only(bottom=16),
             ),
             
             # Resumen de saldos
@@ -89,30 +89,30 @@ class DashboardView:
         
         return ft.Container(
             content=ft.Row(tarjetas, wrap=True, spacing=16, run_spacing=16),
-            padding=ft.padding.symmetric(vertical=16),
+            padding=ft.Padding.symmetric(vertical=16),
         )
     
     def _crear_acciones_rapidas(self) -> ft.Control:
         """Crea botones de acciones rápidas."""
         return ft.Container(
             content=ft.Row([
-                ft.ElevatedButton(
-                    "Nuevo Movimiento",
+                ft.Button(
+                    content=ft.Text("Nuevo Movimiento"),
                     icon=Icons.ADD,
                     on_click=lambda e: self._navegar("/registro"),
                 ),
                 ft.OutlinedButton(
-                    "Ver Historial",
+                    content=ft.Text("Ver Historial"),
                     icon=Icons.HISTORY,
                     on_click=lambda e: self._navegar("/registro"),
                 ),
                 ft.OutlinedButton(
-                    "Configuración",
+                    content=ft.Text("Configuración"),
                     icon=Icons.SETTINGS,
                     on_click=lambda e: self._navegar("/admin"),
                 ),
             ], spacing=12),
-            padding=ft.padding.symmetric(vertical=16),
+            padding=ft.Padding.symmetric(vertical=16),
         )
     
     def _navegar(self, ruta: str):

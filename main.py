@@ -41,134 +41,179 @@ def main(page: ft.Page):
     # Estado de navegación
     current_route = "/"
     
-    # Contenedor principal (cambia entre login y app)
-    main_container = ft.Container(expand=True)
-    
     def construir_app_principal():
         """Construye la interfaz principal de la aplicación."""
         
         sesion = auth.sesion
         
-        # Información del usuario en el header del rail
-        user_header = ft.Container(
-            content=ft.Column([
-                ft.Icon(ft.Icons.ACCOUNT_BALANCE_WALLET, size=32, color=AppTheme.PRIMARY),
-                ft.Text("ConSmart", size=12, weight=ft.FontWeight.BOLD),
-                ft.Divider(height=8),
-                ft.Row([
-                    ft.Icon(ft.Icons.PERSON, size=14, color=AppTheme.ACCENT),
-                    ft.Text(
-                        sesion.username if sesion else "",
-                        size=10,
-                        color=AppTheme.TEXT_SECONDARY,
-                    ),
-                ], spacing=4, alignment=ft.MainAxisAlignment.CENTER),
-                ft.Text(
-                    sesion.rol_nombre if sesion else "",
-                    size=9,
-                    color=AppTheme.TEXT_SECONDARY,
-                    italic=True,
-                ),
-            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
-            padding=ft.padding.symmetric(vertical=12),
-        )
+        # Contenedor para las vistas
+        vista_actual = [None]  # Usar lista para permitir modificación en closure
         
-        # Determinar destinos disponibles según permisos
-        destinations = []
-        route_map = {}
+        def crear_vista_dashboard():
+            print("DEBUG: Creando vista Dashboard")
+            v = DashboardView(page).build()
+            print(f"DEBUG: Dashboard creado: {type(v)}")
+            return v
         
-        # Dashboard siempre visible
-        destinations.append(ft.NavigationRailDestination(
-            icon=Icons.DASHBOARD,
-            selected_icon=Icons.DASHBOARD,
-            label="Dashboard",
-        ))
-        route_map[len(destinations) - 1] = ("dashboard", lambda: DashboardView(page).build())
+        def crear_vista_registro():
+            print("DEBUG: Creando vista Registro")
+            v = EntryView(page).build()
+            print(f"DEBUG: Registro creado: {type(v)}")
+            return v
         
-        # Registro - solo si puede registrar
+        def crear_vista_historial():
+            print("DEBUG: Creando vista Historial")
+            v = HistoryView(page).build()
+            print(f"DEBUG: Historial creado: {type(v)}")
+            return v
+        
+        def crear_vista_admin():
+            print("DEBUG: Creando vista Admin")
+            v = AdminView(page).build()
+            print(f"DEBUG: Admin creado: {type(v)}")
+            return v
+        
+        # Mapeo de índice a vista
+        vistas = [crear_vista_dashboard]
+        destinations = [
+            ft.NavigationRailDestination(icon=ft.Icons.DASHBOARD, label="Dashboard"),
+        ]
+        
         if auth.puede('puede_registrar'):
-            destinations.append(ft.NavigationRailDestination(
-                icon=Icons.MONEY,
-                selected_icon=Icons.MONEY,
-                label="Registro",
-            ))
-            route_map[len(destinations) - 1] = ("registro", lambda: EntryView(page).build())
+            destinations.append(ft.NavigationRailDestination(icon=ft.Icons.ADD_CIRCLE, label="Registro"))
+            vistas.append(crear_vista_registro)
         
-        # Historial - solo si puede ver historial
         if auth.puede('puede_ver_historial'):
-            destinations.append(ft.NavigationRailDestination(
-                icon=Icons.HISTORY,
-                selected_icon=Icons.HISTORY,
-                label="Historial",
-            ))
-            route_map[len(destinations) - 1] = ("historial", lambda: HistoryView(page).build())
+            destinations.append(ft.NavigationRailDestination(icon=ft.Icons.HISTORY, label="Historial"))
+            vistas.append(crear_vista_historial)
         
-        # Config - si puede gestionar config o usuarios
-        if auth.puede('puede_gestionar_config') or auth.puede('puede_gestionar_usuarios') or auth.es_admin():
-            destinations.append(ft.NavigationRailDestination(
-                icon=Icons.SETTINGS,
-                selected_icon=Icons.SETTINGS,
-                label="Config",
-            ))
-            route_map[len(destinations) - 1] = ("admin", lambda: AdminView(page).build())
+        if auth.puede('puede_gestionar_config') or auth.es_admin():
+            destinations.append(ft.NavigationRailDestination(icon=ft.Icons.SETTINGS, label="Config"))
+            vistas.append(crear_vista_admin)
         
-        # Contenedor de vistas
-        vista_container = ft.Container(
+        # Contenedor de contenido
+        contenido = ft.Container(
+            content=crear_vista_dashboard(),
             expand=True,
             padding=20,
-            bgcolor=AppTheme.BACKGROUND,
+            bgcolor="#FAFAFA",
         )
         
-        def cambiar_vista(index: int):
-            """Cambia la vista según el índice."""
-            if index in route_map:
-                _, builder = route_map[index]
-                vista_container.content = builder()
-                page.update()
+        def cambiar_vista(e):
+            idx = e.control.selected_index
+            if idx < len(vistas):
+                try:
+                    nueva_vista = vistas[idx]()
+                    contenido.content = nueva_vista
+                    page.update()
+                except Exception as ex:
+                    print(f"ERROR en vista {idx}: {ex}")
+                    import traceback
+                    traceback.print_exc()
         
-        # Barra de navegación
+        # Header del rail
+        header = ft.Container(
+            content=ft.Column([
+                ft.Icon(ft.Icons.ACCOUNT_BALANCE_WALLET, size=32, color=AppTheme.PRIMARY),
+                ft.Text("ConSmart", size=11, weight=ft.FontWeight.BOLD),
+                ft.Text(sesion.username if sesion else "", size=9, color=AppTheme.TEXT_SECONDARY),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
+            padding=10,
+        )
+        
+        # Footer del rail
+        footer = ft.Container(
+            content=ft.IconButton(
+                icon=ft.Icons.LOGOUT,
+                icon_color=AppTheme.ERROR,
+                tooltip="Cerrar sesión",
+                on_click=lambda e: cerrar_sesion(),
+            ),
+            padding=10,
+        )
+        
         rail = ft.NavigationRail(
             selected_index=0,
             label_type=ft.NavigationRailLabelType.ALL,
             min_width=80,
-            min_extended_width=200,
-            leading=user_header,
-            trailing=ft.Container(
-                content=ft.Column([
-                    ft.IconButton(
-                        icon=ft.Icons.LOGOUT,
-                        icon_color=AppTheme.ERROR,
-                        tooltip="Cerrar sesión",
-                        on_click=lambda e: cerrar_sesion(),
-                    ),
-                ]),
-                padding=ft.padding.only(bottom=16),
-            ),
+            leading=header,
+            trailing=footer,
             destinations=destinations,
-            on_change=lambda e: cambiar_vista(e.control.selected_index),
+            on_change=cambiar_vista,
             bgcolor=ft.Colors.WHITE,
         )
         
-        # Vista inicial
-        cambiar_vista(0)
-        
-        return ft.Row([
-            rail,
-            ft.VerticalDivider(width=1),
-            vista_container,
-        ], expand=True)
+        return ft.Row(
+            controls=[rail, ft.VerticalDivider(width=1), contenido],
+            expand=True,
+        )
     
     def mostrar_login():
-        """Muestra la pantalla de login."""
-        login_view = LoginView(page, on_login_success=on_login_exitoso)
-        main_container.content = login_view.build()
-        page.update()
+        """Muestra la pantalla de login simple."""
+        
+        txt_usuario = ft.TextField(label="Usuario", width=300)
+        txt_password = ft.TextField(label="Contraseña", password=True, width=300)
+        lbl_error = ft.Text("", color=AppTheme.ERROR)
+        
+        def hacer_login(e):
+            username = txt_usuario.value or ""
+            password = txt_password.value or ""
+            
+            if not username or not password:
+                lbl_error.value = "Complete todos los campos"
+                page.update()
+                return
+            
+            exito, mensaje = auth.login(username, password)
+            if exito:
+                on_login_exitoso()
+            else:
+                lbl_error.value = mensaje
+                page.update()
+        
+        login_card = ft.Card(
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Icon(ft.Icons.ACCOUNT_BALANCE_WALLET, size=64, color=AppTheme.PRIMARY),
+                    ft.Text("ConSmart", size=24, weight=ft.FontWeight.BOLD),
+                    ft.Container(height=20),
+                    txt_usuario,
+                    txt_password,
+                    lbl_error,
+                    ft.Container(height=10),
+                    ft.Button(
+                        content=ft.Text("Iniciar Sesión"),
+                        width=300,
+                        on_click=hacer_login,
+                    ),
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                padding=40,
+            ),
+        )
+        
+        page.clean()
+        page.add(
+            ft.Container(
+                content=login_card,
+                expand=True,
+                alignment=ft.Alignment(0, 0),
+            )
+        )
     
     def on_login_exitoso():
         """Callback cuando el login es exitoso."""
-        main_container.content = construir_app_principal()
-        page.title = f"{APP_CONFIG['nombre']} - {auth.sesion.nombre_completo}"
-        page.update()
+        print("DEBUG: on_login_exitoso llamado")
+        try:
+            page.clean()
+            app_content = construir_app_principal()
+            print(f"DEBUG: app_content tipo: {type(app_content)}")
+            page.add(app_content)
+            page.title = f"{APP_CONFIG['nombre']} - {auth.sesion.nombre_completo}"
+            print("DEBUG: page.add() completado")
+        except Exception as e:
+            print(f"ERROR en on_login_exitoso: {e}")
+            import traceback
+            traceback.print_exc()
     
     def cerrar_sesion():
         """Cierra la sesión actual."""
@@ -178,13 +223,10 @@ def main(page: ft.Page):
     
     # Verificar si ya hay sesión activa
     if auth.esta_autenticado():
-        main_container.content = construir_app_principal()
+        page.add(construir_app_principal())
     else:
         mostrar_login()
-    
-    # Agregar contenedor principal
-    page.add(main_container)
 
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.run(main)

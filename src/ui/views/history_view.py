@@ -40,7 +40,7 @@ class HistoryView:
                     [ft.dropdown.Option(key=str(h['id']), text=h['nombre']) for h in self.hojas],
             value="",
             width=150,
-            on_change=self._on_filtro_change,
+            on_select=self._on_filtro_change,
             dense=True,
         )
         
@@ -50,7 +50,7 @@ class HistoryView:
                     [ft.dropdown.Option(key=str(l['id']), text=l['nombre']) for l in self.locales],
             value="",
             width=150,
-            on_change=self._on_filtro_change,
+            on_select=self._on_filtro_change,
             dense=True,
         )
         
@@ -68,7 +68,7 @@ class HistoryView:
             ],
             value="mes",
             width=140,
-            on_change=self._on_periodo_change,
+            on_select=self._on_periodo_change,
             dense=True,
         )
         
@@ -99,17 +99,16 @@ class HistoryView:
             on_change=self._on_buscar_change,
         )
         
-        self.btn_aplicar = ft.ElevatedButton(
-            "Aplicar filtros",
+        self.btn_aplicar = ft.Button(
+            content=ft.Text("Aplicar filtros"),
             icon=Icons.FILTER,
             on_click=self._aplicar_filtros,
             bgcolor=AppTheme.PRIMARY,
             color=ft.Colors.WHITE,
         )
-        
+
         self.btn_limpiar_filtros = ft.TextButton(
-            "Limpiar",
-            on_click=self._limpiar_filtros,
+            content=ft.Text("Limpiar"),
         )
         
         # ===== TARJETAS DE RESUMEN =====
@@ -140,8 +139,8 @@ class HistoryView:
             color=AppTheme.TEXT_SECONDARY,
         )
         
-        self.btn_exportar = ft.ElevatedButton(
-            "📥 Exportar a Excel",
+        self.btn_exportar = ft.Button(
+            content=ft.Text("📥 Exportar a Excel"),
             on_click=self._exportar_excel,
             bgcolor=AppTheme.SUCCESS,
             color=ft.Colors.WHITE,
@@ -158,7 +157,7 @@ class HistoryView:
                     ], spacing=12),
                     self.btn_exportar,
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                padding=ft.padding.only(bottom=16),
+                padding=ft.Padding.only(bottom=16),
             ),
             
             # Barra de filtros
@@ -416,8 +415,8 @@ class HistoryView:
                 ft.Row([txt_ingreso, txt_egreso], spacing=16),
             ], tight=True, spacing=16),
             actions=[
-                ft.TextButton("Cancelar", on_click=cerrar),
-                ft.ElevatedButton("Guardar", on_click=guardar_cambios, bgcolor=AppTheme.PRIMARY),
+                ft.TextButton(content=ft.Text("Cancelar"), on_click=cerrar),
+                ft.Button(content=ft.Text("Guardar"), on_click=guardar_cambios, bgcolor=AppTheme.PRIMARY),
             ],
         )
         
@@ -449,8 +448,8 @@ class HistoryView:
             title=ft.Text("Confirmar eliminación"),
             content=ft.Text("¿Está seguro de eliminar este movimiento? Esta acción no se puede deshacer."),
             actions=[
-                ft.TextButton("Cancelar", on_click=cancelar),
-                ft.ElevatedButton("Eliminar", on_click=confirmar, bgcolor=AppTheme.ERROR, color=ft.Colors.WHITE),
+                ft.TextButton(content=ft.Text("Cancelar"), on_click=cancelar),
+                ft.Button(content=ft.Text("Eliminar"), on_click=confirmar, bgcolor=AppTheme.ERROR, color=ft.Colors.WHITE),
             ],
         )
         

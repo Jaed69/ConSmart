@@ -45,7 +45,7 @@ class UsuariosView:
                         color=AppTheme.TEXT_SECONDARY,
                     ),
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=16),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment(0, 0),
                 expand=True,
             )
         
@@ -61,14 +61,14 @@ class UsuariosView:
             ft.Container(
                 content=ft.Row([
                     ft.Text("👥 Gestión de Usuarios", **Styles.titulo_pagina()),
-                    ft.ElevatedButton(
-                        "Nuevo Usuario",
+                    ft.Button(
+                        content=ft.Text("Nuevo Usuario"),
                         icon=Icons.ADD,
                         style=ft.ButtonStyle(bgcolor=AppTheme.PRIMARY, color=ft.Colors.WHITE),
                         on_click=self._abrir_formulario_nuevo,
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                padding=ft.padding.only(bottom=16),
+                padding=ft.Padding.only(bottom=16),
             ),
             
             # Contenido principal (lista + formulario)
@@ -105,9 +105,8 @@ class UsuariosView:
         ]
         # Solo actualizar si el control ya está en la página
         try:
-            if self.lista_usuarios.page:
-                self.lista_usuarios.update()
-        except (AssertionError, AttributeError):
+            self.lista_usuarios.update()
+        except RuntimeError:
             pass  # El control aún no está en la página
     
     def _crear_item_usuario(self, usuario: Dict[str, Any]) -> ft.Control:
@@ -162,7 +161,7 @@ class UsuariosView:
                         color=ft.Colors.WHITE if es_activo else AppTheme.TEXT_SECONDARY,
                     ),
                     bgcolor=AppTheme.SUCCESS if es_activo else AppTheme.DIVIDER,
-                    padding=ft.padding.symmetric(horizontal=8, vertical=4),
+                    padding=ft.Padding.symmetric(horizontal=8, vertical=4),
                     border_radius=12,
                 ),
                 
@@ -316,9 +315,9 @@ class UsuariosView:
             dd_rol,
             lbl_error,
             ft.Row([
-                ft.TextButton("Cancelar", on_click=lambda e: self._cerrar_formulario()),
-                ft.ElevatedButton(
-                    "Guardar",
+                ft.TextButton(content=ft.Text("Cancelar"), on_click=lambda e: self._cerrar_formulario()),
+                ft.Button(
+                    content=ft.Text("Guardar"),
                     icon=Icons.SAVE,
                     style=ft.ButtonStyle(bgcolor=AppTheme.PRIMARY, color=ft.Colors.WHITE),
                     on_click=guardar,
@@ -390,8 +389,8 @@ class UsuariosView:
                 lbl_error,
             ], tight=True, spacing=12),
             actions=[
-                ft.TextButton("Cancelar", on_click=lambda e: self.page.close(dlg)),
-                ft.ElevatedButton("Cambiar", on_click=cambiar),
+                ft.TextButton(content=ft.Text("Cancelar"), on_click=lambda e: self.page.close(dlg)),
+                ft.Button(content=ft.Text("Cambiar"), on_click=cambiar),
             ],
         )
         self.page.open(dlg)

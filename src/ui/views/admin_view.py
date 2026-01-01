@@ -29,30 +29,30 @@ class AdminView:
         puede_config = self.auth.puede('puede_gestionar_config') or self.auth.es_admin()
         puede_usuarios = self.auth.puede('puede_gestionar_usuarios')
         
-        # Tabs disponibles según permisos
+        # Crear tabs y contenidos separados
         tabs_list = []
-        tab_contents = []
+        self.tab_contents = []
         
         if puede_config:
-            tabs_list.extend([
-                ft.Tab(text="Hojas/Cuentas", icon=Icons.ACCOUNT),
-                ft.Tab(text="Locales", icon=Icons.STORE),
-                ft.Tab(text="Categorías", icon=Icons.CATEGORY),
-            ])
             self.tab_hojas = self._crear_tab_hojas()
             self.tab_locales = self._crear_tab_locales()
             self.tab_categorias = self._crear_tab_categorias()
-            tab_contents.extend([self.tab_hojas, self.tab_locales, self.tab_categorias])
+            tabs_list.extend([
+                ft.Tab(label="Hojas/Cuentas", icon=Icons.ACCOUNT),
+                ft.Tab(label="Locales", icon=Icons.STORE),
+                ft.Tab(label="Categorías", icon=Icons.CATEGORY),
+            ])
+            self.tab_contents.extend([self.tab_hojas, self.tab_locales, self.tab_categorias])
         
         if puede_usuarios:
-            tabs_list.append(ft.Tab(text="Usuarios", icon=ft.Icons.PEOPLE))
             self.tab_usuarios = UsuariosView(self.page).build()
-            tab_contents.append(self.tab_usuarios)
+            tabs_list.append(ft.Tab(label="Usuarios", icon=ft.Icons.PEOPLE))
+            self.tab_contents.append(self.tab_usuarios)
         
         # Siempre mostrar info de roles
-        tabs_list.append(ft.Tab(text="Roles", icon=ft.Icons.SECURITY))
         self.tab_roles = RolesInfoView(self.page).build()
-        tab_contents.append(self.tab_roles)
+        tabs_list.append(ft.Tab(label="Roles", icon=ft.Icons.SECURITY))
+        self.tab_contents.append(self.tab_roles)
         
         # Si no tiene ningún permiso
         if not tabs_list:
@@ -70,22 +70,21 @@ class AdminView:
                         color=AppTheme.TEXT_SECONDARY,
                     ),
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=16),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment(0, 0),
                 expand=True,
             )
         
-        self.tab_contents = tab_contents
-        
-        # Tabs para cada sección
+        # Tabs para navegación (sin contenido, solo etiquetas)
         self.tabs = ft.Tabs(
+            content=tabs_list,
+            length=len(tabs_list),
             selected_index=0,
-            tabs=tabs_list,
             on_change=self._on_tab_change,
         )
         
-        # Contenedor de contenido
+        # Contenedor para el contenido del tab activo
         self.contenido = ft.Container(
-            content=tab_contents[0] if tab_contents else ft.Container(),
+            content=self.tab_contents[0] if self.tab_contents else ft.Container(),
             expand=True,
         )
         
@@ -108,7 +107,7 @@ class AdminView:
                     ft.Text("⚙️ Configuración del Sistema", **Styles.titulo_pagina()),
                     user_info,
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                padding=ft.padding.only(bottom=16),
+                padding=ft.Padding.only(bottom=16),
             ),
             self.tabs,
             ft.Divider(),
@@ -117,9 +116,13 @@ class AdminView:
     
     def _on_tab_change(self, e):
         """Cambia el contenido según el tab seleccionado."""
-        if self.tabs.selected_index < len(self.tab_contents):
-            self.contenido.content = self.tab_contents[self.tabs.selected_index]
-            self.contenido.update()
+        idx = self.tabs.selected_index
+        if idx < len(self.tab_contents):
+            self.contenido.content = self.tab_contents[idx]
+            try:
+                self.contenido.update()
+            except RuntimeError:
+                pass
     
     # ==================== TAB HOJAS ====================
     
@@ -160,13 +163,13 @@ class AdminView:
                     self.input_hoja_nombre,
                     self.dd_hoja_tipo,
                     self.dd_hoja_moneda,
-                    ft.ElevatedButton(
-                        "Agregar",
+                    ft.Button(
+                        content=ft.Text("Agregar"),
                         icon=Icons.ADD,
                         on_click=self._agregar_hoja,
                     ),
                 ], spacing=12),
-                padding=ft.padding.symmetric(vertical=16),
+                padding=ft.Padding.symmetric(vertical=16),
             ),
             ft.Text("Cuentas registradas:", **Styles.subtitulo()),
             ft.Container(
@@ -255,13 +258,13 @@ class AdminView:
             ft.Container(
                 content=ft.Row([
                     self.input_local_nombre,
-                    ft.ElevatedButton(
-                        "Agregar",
+                    ft.Button(
+                        content=ft.Text("Agregar"),
                         icon=Icons.ADD,
                         on_click=self._agregar_local,
                     ),
                 ], spacing=12),
-                padding=ft.padding.symmetric(vertical=16),
+                padding=ft.Padding.symmetric(vertical=16),
             ),
             ft.Text("Locales registrados:", **Styles.subtitulo()),
             ft.Container(
@@ -331,7 +334,7 @@ class AdminView:
             label="Local",
             options=[ft.dropdown.Option(key=str(l['id']), text=l['nombre']) for l in locales],
             width=200,
-            on_change=self._on_cat_local_change,
+            on_select=self._on_cat_local_change,
         )
         
         self.input_cat_nombre = ft.TextField(
@@ -359,13 +362,13 @@ class AdminView:
                     self.dd_cat_local,
                     self.input_cat_nombre,
                     self.dd_cat_tipo,
-                    ft.ElevatedButton(
-                        "Agregar",
+                    ft.Button(
+                        content=ft.Text("Agregar"),
                         icon=Icons.ADD,
                         on_click=self._agregar_categoria,
                     ),
                 ], spacing=12),
-                padding=ft.padding.symmetric(vertical=16),
+                padding=ft.Padding.symmetric(vertical=16),
             ),
             ft.Text("Categorías del local seleccionado:", **Styles.subtitulo()),
             ft.Container(

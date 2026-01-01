@@ -69,7 +69,7 @@ class ExcelRow:
             label="Local",
             options=[ft.dropdown.Option(key=str(l['id']), text=l['nombre']) for l in self.locales],
             width=140,
-            on_change=self._on_local_change,
+            on_select=self._on_local_change,
             **Styles.dropdown_excel(),
         )
         
@@ -168,7 +168,7 @@ class ExcelRow:
                     scroll=ft.ScrollMode.AUTO,
                     spacing=8,
                 ),
-                padding=ft.padding.symmetric(horizontal=10, vertical=8),
+                padding=ft.Padding.symmetric(horizontal=10, vertical=8),
                 bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 border=ft.border.all(1, AppTheme.DIVIDER),

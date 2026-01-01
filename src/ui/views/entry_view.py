@@ -40,11 +40,14 @@ class EntryView:
             on_submit_all=self._guardar_movimientos,
             obtener_categorias=self._obtener_categorias,
             page=self.page,
-            filas_iniciales=8,
+            filas_iniciales=5,
         )
         
         # Contador de movimientos del día
         movimientos_hoy = self.mov_service.contar_movimientos_hoy()
+        
+        # Construir grid
+        grid_content = self.excel_grid.build()
         
         return ft.Column([
             # Header compacto
@@ -63,18 +66,19 @@ class EntryView:
                                 color=AppTheme.TEXT_SECONDARY,
                             ),
                         ], spacing=6),
-                        padding=ft.padding.symmetric(horizontal=10, vertical=4),
+                        padding=ft.Padding.symmetric(horizontal=10, vertical=4),
                         bgcolor=ft.Colors.GREY_100,
                         border_radius=12,
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                padding=ft.padding.only(bottom=12),
+                padding=ft.Padding.only(bottom=12),
             ),
             
             # Grid de ingreso masivo (área principal)
             ft.Container(
-                content=self.excel_grid.build(),
+                content=grid_content,
                 expand=True,
+                bgcolor=ft.Colors.WHITE,
             ),
             
             # Barra inferior con saldos compactos
@@ -95,7 +99,7 @@ class EntryView:
                         color=AppTheme.TEXT_DISABLED,
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, wrap=True),
-                padding=ft.padding.symmetric(horizontal=12, vertical=8),
+                padding=ft.Padding.symmetric(horizontal=12, vertical=8),
                 bgcolor=ft.Colors.GREY_50,
                 border_radius=ft.border_radius.only(top_left=8, top_right=8),
                 border=ft.border.only(top=ft.border.BorderSide(1, AppTheme.DIVIDER)),
@@ -116,7 +120,7 @@ class EntryView:
                     color=color,
                 ),
             ], spacing=4),
-            padding=ft.padding.symmetric(horizontal=8, vertical=3),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=3),
             bgcolor=ft.Colors.WHITE,
             border_radius=12,
             border=ft.border.all(1, AppTheme.DIVIDER),

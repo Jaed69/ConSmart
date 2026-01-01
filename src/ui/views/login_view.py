@@ -54,8 +54,8 @@ class LoginView:
             text_align=ft.TextAlign.CENTER,
         )
         
-        self.btn_login = ft.ElevatedButton(
-            text="Iniciar Sesión",
+        self.btn_login = ft.Button(
+            content=ft.Text("Iniciar Sesión"),
             icon=Icons.LOGIN,
             width=300,
             height=45,
@@ -90,7 +90,7 @@ class LoginView:
                                 color=AppTheme.TEXT_SECONDARY,
                             ),
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
-                        padding=ft.padding.only(bottom=24),
+                        padding=ft.Padding.only(bottom=24),
                     ),
                     
                     # Formulario
@@ -119,7 +119,7 @@ class LoginView:
                                 selectable=True,
                             ),
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
-                        padding=ft.padding.only(top=16),
+                        padding=ft.Padding.only(top=16),
                     ),
                 ], 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -141,7 +141,7 @@ class LoginView:
             ),
             expand=True,
             bgcolor=AppTheme.BACKGROUND,
-            alignment=ft.alignment.center,
+            alignment=ft.Alignment(0, 0),
         )
     
     def _intentar_login(self, e):
@@ -162,7 +162,7 @@ class LoginView:
         
         # Deshabilitar botón mientras procesa
         self.btn_login.disabled = True
-        self.btn_login.text = "Verificando..."
+        self.btn_login.content = ft.Text("Verificando...")
         self.page.update()
         
         # Intentar login
@@ -174,12 +174,13 @@ class LoginView:
             self.lbl_error.value = f"✓ {mensaje}"
             self.page.update()
             
-            # Llamar callback de éxito
+            # Llamar callback de éxito y salir
             self.on_login_success()
+            return
         else:
             self._mostrar_error(mensaje)
             self.btn_login.disabled = False
-            self.btn_login.text = "Iniciar Sesión"
+            self.btn_login.content = ft.Text("Iniciar Sesión")
             self.txt_password.value = ""
             self.txt_password.focus()
             self.page.update()

@@ -55,7 +55,7 @@ class ExcelGridRow:
             value=self.default_hoja_id,
             width=120,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=0),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=0),
             text_size=12,
         )
         
@@ -64,7 +64,7 @@ class ExcelGridRow:
             value=self.default_fecha,
             width=100,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
         )
         
@@ -73,9 +73,9 @@ class ExcelGridRow:
             options=[ft.dropdown.Option(key=str(l['id']), text=l['nombre']) for l in self.locales],
             width=120,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=0),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=0),
             text_size=12,
-            on_change=self._on_local_change,
+            on_select=self._on_local_change,
         )
         
         # Dropdown de Categoría
@@ -83,7 +83,7 @@ class ExcelGridRow:
             options=[],
             width=130,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=0),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=0),
             text_size=12,
         )
         
@@ -91,7 +91,7 @@ class ExcelGridRow:
         self.txt_doc = ft.TextField(
             width=80,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
         )
         
@@ -99,7 +99,7 @@ class ExcelGridRow:
         self.txt_responsable = ft.TextField(
             width=100,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
         )
         
@@ -107,7 +107,7 @@ class ExcelGridRow:
         self.txt_descripcion = ft.TextField(
             width=150,
             dense=True,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
         )
         
@@ -118,7 +118,7 @@ class ExcelGridRow:
             dense=True,
             text_align=ft.TextAlign.RIGHT,
             keyboard_type=ft.KeyboardType.NUMBER,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
             on_change=self._on_ingreso_change,
         )
@@ -130,7 +130,7 @@ class ExcelGridRow:
             dense=True,
             text_align=ft.TextAlign.RIGHT,
             keyboard_type=ft.KeyboardType.NUMBER,
-            content_padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            content_padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             text_size=12,
             on_change=self._on_egreso_change,
         )
@@ -172,7 +172,7 @@ class ExcelGridRow:
                 spacing=4,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            padding=ft.padding.symmetric(horizontal=8, vertical=4),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=4),
             border=ft.border.only(bottom=ft.border.BorderSide(1, AppTheme.DIVIDER)),
         )
         
@@ -316,7 +316,7 @@ class ExcelGrid:
                 ],
                 spacing=4,
             ),
-            padding=ft.padding.symmetric(horizontal=8, vertical=8),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=8),
             bgcolor=ft.Colors.GREY_100,
             border_radius=ft.border_radius.only(top_left=8, top_right=8),
         )
@@ -336,39 +336,39 @@ class ExcelGrid:
         self.barra_acciones = ft.Container(
             content=ft.Row(
                 controls=[
-                    ft.ElevatedButton(
-                        "➕ Agregar fila",
+                    ft.Button(
+                        content=ft.Text("➕ Agregar fila"),
                         on_click=lambda e: self._agregar_fila(),
                         bgcolor=AppTheme.BACKGROUND,
                         color=AppTheme.PRIMARY,
                     ),
-                    ft.ElevatedButton(
-                        "➕➕ Agregar 5 filas",
+                    ft.Button(
+                        content=ft.Text("➕➕ Agregar 5 filas"),
                         on_click=lambda e: self._agregar_multiples_filas(5),
                         bgcolor=AppTheme.BACKGROUND,
                         color=AppTheme.PRIMARY,
                     ),
                     ft.Container(expand=True),
                     ft.Text("", size=12, color=AppTheme.TEXT_SECONDARY),  # Contador
-                    ft.ElevatedButton(
-                        "🗑️ Limpiar todo",
+                    ft.Button(
+                        content=ft.Text("🗑️ Limpiar todo"),
                         on_click=self._limpiar_todo,
                         bgcolor=AppTheme.BACKGROUND,
                         color=AppTheme.ERROR,
                     ),
-                    ft.ElevatedButton(
-                        "💾 Guardar todo",
+                    ft.Button(
+                        content=ft.Text("💾 Guardar todo"),
                         on_click=self._guardar_todo,
                         bgcolor=AppTheme.SUCCESS,
                         color=ft.Colors.WHITE,
                         style=ft.ButtonStyle(
-                            padding=ft.padding.symmetric(horizontal=24, vertical=12),
+                            padding=ft.Padding.symmetric(horizontal=24, vertical=12),
                         ),
                     ),
                 ],
                 spacing=12,
             ),
-            padding=ft.padding.symmetric(horizontal=8, vertical=12),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=12),
             bgcolor=ft.Colors.WHITE,
             border_radius=ft.border_radius.only(bottom_left=8, bottom_right=8),
             border=ft.border.only(top=ft.border.BorderSide(1, AppTheme.DIVIDER)),
@@ -378,7 +378,7 @@ class ExcelGrid:
         self.mensaje = ft.Container(
             content=ft.Text("", size=12),
             visible=False,
-            padding=ft.padding.symmetric(horizontal=12, vertical=8),
+            padding=ft.Padding.symmetric(horizontal=12, vertical=8),
             border_radius=4,
         )
         
@@ -389,15 +389,15 @@ class ExcelGrid:
                     ft.Container(
                         content=self.filas_container,
                         bgcolor=ft.Colors.WHITE,
-                        height=300,  # Altura fija con scroll
+                        height=350,
                     ),
                     self.barra_acciones,
-                ], spacing=0),
+                ], spacing=0, scroll=ft.ScrollMode.AUTO),
                 border=ft.border.all(1, AppTheme.DIVIDER),
                 border_radius=8,
             ),
             self.mensaje,
-        ])
+        ], scroll=ft.ScrollMode.AUTO)
         
         self._actualizar_numeros()
         return self._control
